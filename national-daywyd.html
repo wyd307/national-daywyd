@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>国庆节快乐 · 2026</title>
+  <style>
+    :root {
+      --surface:   oklch(28% 0.14 22);
+      --card-bg:   oklch(34% 0.16 22 / 0.55);
+      --gold:      oklch(78% 0.16 74);
+      --gold-lt:   oklch(90% 0.12 80);
+      --gold-dk:   oklch(62% 0.18 58);
+      --text:      oklch(96% 0.02 75);
+      --muted:     oklch(72% 0.06 72);
+      --border:    oklch(78% 0.16 74 / 0.20);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'PingFang SC', 'Hiragino Sans GB', 'Noto Serif SC', 'Source Han Serif SC', serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100dvh;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #fireworks {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 430px;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 52px 28px 72px;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      font-size: 10.5px;
+      letter-spacing: 0.38em;
+      color: var(--gold);
+      margin-bottom: 36px;
+      opacity: 0;
+      animation: rise 0.9s 0.2s ease both;
+    }
+
+    /* ── Year ring ── */
+    .year-ring {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 44px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      animation: rise 1s 0.4s ease both;
+    }
+    .year-ring .num {
+      font-size: 34px;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--gold-lt);
+      line-height: 1;
+    }
+    .year-ring .sub {
+      font-size: 9px;
+      letter-spacing: 0.28em;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Headline ── */
+    .headline {
+      text-align: center;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: rise 1s 0.65s ease both;
+    }
+    .headline h1 {
+      font-size: clamp(36px, 9vw, 52px);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      line-height: 1.15;
+      background: linear-gradient(
+        135deg,
+        var(--gold-lt) 0%,
+        var(--gold) 45%,
+        var(--gold-dk) 100%
+      );
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .headline .en {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 0.32em;
+      color: var(--muted);
+      margin-top: 10px;
+      font-weight: 400;
+      font-style: italic;
+      -webkit-text-fill-color: var(--muted);
+    }
+
+    /* ── Divider ── */
+    .divider {
+      width: 48px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 40px;
+      opacity: 0;
+      animation: rise 1s 0.8s ease both;
+    }
+
+    /* ── Verse card ── */
+    .verse-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px 28px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: rise 1s 1s ease both;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.3s ease;
+    }
+    .verse-card:hover { border-color: oklch(78% 0.16 74 / 0.45); }
+    .verse-card p {
+      font-size: 15px;
+      line-height: 2;
+      color: var(--text);
+      text-align: center;
+      letter-spacing: 0.08em;
+      transition: opacity 0.25s ease;
+    }
+    .verse-card.fading p { opacity: 0; }
+    .verse-card .attr {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 18px;
+      letter-spacing: 0.16em;
+      transition: opacity 0.25s ease;
+    }
+    .verse-card.fading .attr { opacity: 0; }
+    .verse-refresh {
+      position: absolute;
+      top: 14px; right: 16px;
+      font-size: 11px;
+      color: oklch(60% 0.08 72 / 0.5);
+      letter-spacing: 0.18em;
+      pointer-events: none;
+    }
+
+    /* ── Stat row ── */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: rise 1s 1.2s ease both;
+    }
+    .stat-cell {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 8px 14px;
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      text-align: center;
+    }
+    .stat-cell .n {
+      display: block;
+      font-size: 26px;
+      font-weight: 300;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+    .stat-cell .l {
+      display: block;
+      font-size: 9.5px;
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      margin-top: 6px;
+    }
+
+    /* ── Footer line ── */
+    .footer-line {
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      color: oklch(60% 0.06 72 / 0.5);
+      text-align: center;
+      opacity: 0;
+      animation: rise 1s 1.4s ease both;
+    }
+
+    /* ── Keyframe ── */
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { animation-duration: 0.01ms !important; }
+    }
+
+    /* ── Stars ── */
+    #stars {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Lanterns ── */
+    .lanterns {
+      display: flex;
+      gap: 48px;
+      justify-content: center;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: rise 1s 0.1s ease both;
+    }
+    .lantern {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-origin: top center;
+      animation: swing 4s ease-in-out infinite;
+    }
+    .lantern:nth-child(2) { animation-delay: -2s; }
+    @keyframes swing {
+      0%,100% { transform: rotate(-8deg); }
+      50%      { transform: rotate( 8deg); }
+    }
+    .lantern-body {
+      width: 28px;
+      height: 40px;
+      background: radial-gradient(ellipse at 35% 35%,
+        oklch(78% 0.28 28), oklch(52% 0.26 22));
+      border-radius: 50% 50% 45% 45% / 40% 40% 60% 60%;
+      box-shadow: 0 0 18px 6px oklch(70% 0.22 28 / 0.55),
+                  0 0 40px 12px oklch(68% 0.20 28 / 0.25);
+      position: relative;
+    }
+    .lantern-body::after {
+      content: '';
+      position: absolute;
+      inset: 30% 20% auto;
+      height: 35%;
+      background: oklch(90% 0.10 50 / 0.35);
+      border-radius: 50%;
+      filter: blur(4px);
+    }
+    .lantern-string {
+      width: 1.5px;
+      height: 14px;
+      background: var(--gold-dk);
+      margin-bottom: 3px;
+    }
+    .lantern-tassel {
+      width: 2px;
+      height: 18px;
+      background: linear-gradient(var(--gold), transparent);
+      border-radius: 1px;
+    }
+
+    /* ── Clock ── */
+    .clock-block {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      opacity: 0;
+      animation: rise 1s 1.3s ease both;
+    }
+    .clock-time {
+      font-size: 32px;
+      font-weight: 200;
+      letter-spacing: 0.08em;
+      color: var(--gold-lt);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+    .clock-date {
+      text-align: right;
+    }
+    .clock-date .cdate { display: block; font-size: 13px; color: var(--text); letter-spacing: 0.06em; }
+    .clock-date .cday  { display: block; font-size: 10px; color: var(--muted); letter-spacing: 0.18em; margin-top: 4px; }
+
+    /* ── Tap ripple ── */
+    .ripple {
+      position: fixed;
+      border-radius: 50%;
+      border: 1.5px solid oklch(78% 0.18 74 / 0.8);
+      pointer-events: none;
+      transform: scale(0);
+      opacity: 1;
+      animation: ripple-out 0.7s ease-out forwards;
+      z-index: 10;
+    }
+    @keyframes ripple-out {
+      to { transform: scale(1); opacity: 0; }
+    }
+
+    /* ── Progress bar ── */
+    .progress-section {
+      width: 100%;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: rise 1s 1.1s ease both;
+    }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .progress-label .pl { font-size: 11px; letter-spacing: 0.2em; color: var(--muted); }
+    .progress-label .pv { font-size: 13px; color: var(--gold); font-variant-numeric: tabular-nums; }
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      background: oklch(50% 0.05 72 / 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-dk), var(--gold), var(--gold-lt));
+      border-radius: 2px;
+      transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+      width: 0;
+    }
+
+    /* ── Share button ── */
+    .share-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 0;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      color: var(--gold);
+      font-size: 13px;
+      letter-spacing: 0.2em;
+      cursor: pointer;
+      margin-bottom: 28px;
+      transition: border-color 0.25s, background 0.25s;
+      opacity: 0;
+      animation: rise 1s 1.55s ease both;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .share-btn:hover { border-color: oklch(78% 0.16 74 / 0.5); background: oklch(34% 0.16 22 / 0.75); }
+    .share-btn.copied { color: oklch(75% 0.18 150); border-color: oklch(75% 0.18 150 / 0.4); }
+
+    /* ── Wishes scroll ── */
+    .wishes-section {
+      width: 100%;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: rise 1s 1.35s ease both;
+    }
+    .wishes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+    .wishes-header span { font-size: 11px; letter-spacing: 0.22em; color: var(--muted); }
+    .wishes-track {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      padding-bottom: 4px;
+    }
+    .wishes-track::-webkit-scrollbar { display: none; }
+    .wish-chip {
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .wish-chip:active { transform: scale(0.96); }
+    .wish-chip.active { border-color: var(--gold); color: var(--gold); }
+
+    /* ── Tap hint ── */
+    .tap-hint {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+      color: oklch(60% 0.06 72 / 0.45);
+      text-align: center;
+      margin-top: 20px;
+      opacity: 0;
+      animation: rise 1s 1.8s ease both;
+    }
+
+    /* ── Music toggle ── */
+    .music-btn {
+      position: fixed;
+      bottom: 28px;
+      right: 20px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 20;
+      font-size: 18px;
+      transition: border-color 0.25s, transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .music-btn:active { transform: scale(0.92); }
+    .music-btn.playing { border-color: var(--gold); animation: pulse-ring 2s infinite; }
+    @keyframes pulse-ring {
+      0%,100% { box-shadow: 0 0 0 0 oklch(78% 0.18 74 / 0.4); }
+      50%      { box-shadow: 0 0 0 8px oklch(78% 0.18 74 / 0); }
+    }
+
+    /* ── Countdown ── */
+    .countdown-card {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: rise 1s 1.45s ease both;
+      text-align: center;
+    }
+    .countdown-label {
+      font-size: 10px;
+      letter-spacing: 0.28em;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .countdown-cells {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+    .cd-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .cd-num {
+      font-size: 28px;
+      font-weight: 200;
+      color: var(--gold-lt);
+      letter-spacing: 0.04em;
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+      min-width: 44px;
+      text-align: center;
+    }
+    .cd-lbl { font-size: 9px; letter-spacing: 0.2em; color: var(--muted); }
+    .cd-sep { font-size: 22px; color: var(--gold-dk); align-self: flex-start; margin-top: 2px; opacity: 0.6; }
+  </style>
+</head>
+<body>
+
+<canvas id="fireworks"></canvas>
+<canvas id="stars"></canvas>
+
+<div class="page">
+  <div class="lanterns">
+    <div class="lantern">
+      <div class="lantern-string"></div>
+      <div class="lantern-body"></div>
+      <div class="lantern-tassel"></div>
+    </div>
+    <div class="lantern">
+      <div class="lantern-string"></div>
+      <div class="lantern-body"></div>
+      <div class="lantern-tassel"></div>
+    </div>
+  </div>
+
+  <p class="badge">中华人民共和国</p>
+
+  <div class="year-ring">
+    <span class="num">77</span>
+    <span class="sub">YEARS</span>
+  </div>
+
+  <div class="headline">
+    <h1>国庆快乐</h1>
+    <span class="en">Happy National Day · October 1, 2026</span>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="clock-block">
+    <span class="clock-time" id="clock-time">00:00:00</span>
+    <div class="clock-date">
+      <span class="cdate" id="clock-date">2026年10月1日</span>
+      <span class="cday" id="clock-day">THURSDAY</span>
+    </div>
+  </div>
+
+  <div class="verse-card" id="verse-card" title="点击换一句">
+    <span class="verse-refresh">换一句 ↻</span>
+    <p id="verse-text"></p>
+    <span class="attr" id="verse-attr"></span>
+  </div>
+
+  <div class="countdown-card">
+    <p class="countdown-label">距离下一个国庆节还有</p>
+    <div class="countdown-cells">
+      <div class="cd-cell"><span class="cd-num" id="cd-days">00</span><span class="cd-lbl">天</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-cell"><span class="cd-num" id="cd-hours">00</span><span class="cd-lbl">时</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-cell"><span class="cd-num" id="cd-mins">00</span><span class="cd-lbl">分</span></div>
+      <span class="cd-sep">:</span>
+      <div class="cd-cell"><span class="cd-num" id="cd-secs">00</span><span class="cd-lbl">秒</span></div>
+    </div>
+  </div>
+
+  <div class="progress-section">
+    <div class="progress-label">
+      <span class="pl">2026 年度进度</span>
+      <span class="pv" id="year-progress-val">0%</span>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="year-progress-fill"></div></div>
+  </div>
+
+  <div class="wishes-section">
+    <div class="wishes-header">
+      <span>选一句送给朋友</span>
+      <span id="wish-picked-hint">点击即复制</span>
+    </div>
+    <div class="wishes-track" id="wishes-track"></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-cell">
+      <span class="n">77</span>
+      <span class="l">周年</span>
+    </div>
+    <div class="stat-cell">
+      <span class="n">10</span>
+      <span class="l">月 · 一日</span>
+    </div>
+    <div class="stat-cell">
+      <span class="n">2026</span>
+      <span class="l">年</span>
+    </div>
+  </div>
+
+  <button class="share-btn" id="share-btn">✦ 分享这份祝福 ✦</button>
+
+  <p class="footer-line">NATIONAL DAY OF THE PEOPLE'S REPUBLIC OF CHINA</p>
+  <p class="tap-hint">✦ 点击屏幕任意处放烟花 ✦</p>
+</div>
+
+<div class="music-btn" id="music-btn" title="播放/暂停背景音效">🔇</div>
+
+<script>
+(function () {
+  /* ── Stars background ── */
+  const sc = document.getElementById('stars');
+  const sx = sc.getContext('2d');
+  let SW, SH;
+  const stars = [];
+
+  function resizeStars() {
+    SW = sc.width  = window.innerWidth;
+    SH = sc.height = window.innerHeight;
+  }
+  resizeStars();
+  window.addEventListener('resize', resizeStars);
+
+  for (let i = 0; i < 120; i++) {
+    stars.push({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.4 + Math.random() * 1.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 0.8
+    });
+  }
+
+  function drawStars(ts) {
+    sx.clearRect(0, 0, SW, SH);
+    stars.forEach(s => {
+      const alpha = 0.25 + 0.55 * (0.5 + 0.5 * Math.sin(ts * 0.001 * s.speed + s.phase));
+      sx.beginPath();
+      sx.arc(s.x * SW, s.y * SH, s.r, 0, Math.PI * 2);
+      sx.fillStyle = `oklch(90% 0.06 78 / ${alpha})`;
+      sx.fill();
+    });
+    requestAnimationFrame(drawStars);
+  }
+  requestAnimationFrame(drawStars);
+
+  /* ── Fireworks ── */
+  const canvas = document.getElementById('fireworks');
+  const ctx = canvas.getContext('2d');
+  let W, H;
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = [
+    'oklch(78% 0.18 74)',
+    'oklch(90% 0.12 80)',
+    'oklch(68% 0.22 30)',
+    'oklch(82% 0.14 90)',
+    'oklch(72% 0.20 50)',
+    'oklch(85% 0.16 60)',
+  ];
+
+  class Particle {
+    constructor(x, y, color, trail) {
+      this.x = x; this.y = y; this.color = color;
+      const angle = Math.random() * Math.PI * 2;
+      const speed = trail ? (0.5 + Math.random() * 2) : (1.5 + Math.random() * 4.5);
+      this.vx = Math.cos(angle) * speed;
+      this.vy = Math.sin(angle) * speed;
+      this.alpha = 1;
+      this.decay = trail ? (0.03 + Math.random() * 0.02) : (0.011 + Math.random() * 0.01);
+      this.size  = trail ? (1 + Math.random()) : (1.8 + Math.random() * 2.2);
+      this.trail = trail;
+    }
+    update() {
+      this.x += this.vx; this.y += this.vy;
+      this.vy += 0.055;
+      this.vx *= 0.98; this.vy *= 0.98;
+      this.alpha -= this.decay;
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, this.alpha);
+      ctx.fillStyle = this.color;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  let particles = [];
+
+  function burst(x, y) {
+    const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+    const count = 70 + Math.floor(Math.random() * 60);
+    for (let i = 0; i < count; i++) particles.push(new Particle(x, y, color, false));
+    // add trailing sparks
+    for (let i = 0; i < 20; i++) particles.push(new Particle(x, y, color, true));
+  }
+
+  let lastBurst = 0;
+  const BURST_INTERVAL = 1300;
+
+  function loop(ts) {
+    ctx.clearRect(0, 0, W, H);
+    if (ts - lastBurst > BURST_INTERVAL) {
+      burst(W * (0.15 + Math.random() * 0.7), H * (0.08 + Math.random() * 0.42));
+      lastBurst = ts;
+    }
+    particles = particles.filter(p => p.alpha > 0);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(loop);
+  }
+
+  // tap anywhere for extra burst
+  document.addEventListener('pointerdown', e => {
+    burst(e.clientX, e.clientY);
+    // ripple
+    const div = document.createElement('div');
+    div.className = 'ripple';
+    const size = 120;
+    div.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - size/2}px;top:${e.clientY - size/2}px`;
+    document.body.appendChild(div);
+    div.addEventListener('animationend', () => div.remove());
+  });
+
+  setTimeout(() => { burst(W*0.3, H*0.25); burst(W*0.7, H*0.18); }, 600);
+  requestAnimationFrame(loop);
+
+  /* ── Live clock ── */
+  const DAYS_ZH = ['日','一','二','三','四','五','六'];
+  const DAYS_EN = ['SUNDAY','MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY'];
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function tick() {
+    const now = new Date();
+    document.getElementById('clock-time').textContent =
+      `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    document.getElementById('clock-date').textContent =
+      `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
+    document.getElementById('clock-day').textContent =
+      `星期${DAYS_ZH[now.getDay()]}  ${DAYS_EN[now.getDay()]}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+
+  /* ── Random verse ── */
+  const VERSES = [
+    { lines: ['锦绣河山收拾好', '万民尽作主人翁', '山河无恙，岁月静好', '愿你与盛世共芳华'], attr: '— 节日寄语' },
+    { lines: ['起来，不愿做奴隶的人们', '把我们的血肉，筑成我们新的长城', '中华民族到了最危险的时候', '每个人被迫着发出最后的吼声'], attr: '— 《义勇军进行曲》' },
+    { lines: ['故今日之责任', '不在他人，而全在我少年', '少年智则国智', '少年强则国强'], attr: '— 梁启超《少年中国说》' },
+    { lines: ['黄河之水天上来，奔流到海不复回', '高堂明镜悲白发，朝如青丝暮成雪', '人生得意须尽欢，莫使金樽空对月', '天生我材必有用，千金散尽还复来'], attr: '— 李白《将进酒》' },
+    { lines: ['但使龙城飞将在', '不教胡马度阴山', '秦时明月汉时关', '万里长征人未还'], attr: '— 王昌龄《出塞》' },
+    { lines: ['人生自古谁无死', '留取丹心照汗青', '辛苦遭逢起一经', '干戈寥落四周星'], attr: '— 文天祥《过零丁洋》' },
+    { lines: ['会当凌绝顶', '一览众山小', '岱宗夫如何', '齐鲁青未了'], attr: '— 杜甫《望岳》' },
+    { lines: ['王师北定中原日', '家祭无忘告乃翁', '死去元知万事空', '但悲不见九州同'], attr: '— 陆游《示儿》' },
+    { lines: ['江山如此多娇', '引无数英雄竞折腰', '惜秦皇汉武，略输文采', '唐宗宋祖，稍逊风骚'], attr: '— 毛泽东《沁园春·雪》' },
+    { lines: ['红日初升，其道大光', '河出伏流，一泻汪洋', '潜龙腾渊，鳞爪飞扬', '乳虎啸谷，百兽震惶'], attr: '— 梁启超《少年中国说》' },
+    { lines: ['苟利国家生死以', '岂因祸福避趋之', '谪居正是君恩厚', '养拙刚于戍卒宜'], attr: '— 林则徐《赴戍登程口占示家人》' },
+    { lines: ['为什么我的眼里常含泪水', '因为我对这土地爱得深沉', '假如我是一只鸟', '我也应该用嘶哑的喉咙歌唱'], attr: '— 艾青《我爱这土地》' },
+  ];
+
+  let lastVerseIdx = -1;
+
+  function pickVerse() {
+    let idx;
+    do { idx = Math.floor(Math.random() * VERSES.length); } while (idx === lastVerseIdx);
+    lastVerseIdx = idx;
+    return VERSES[idx];
+  }
+
+  function renderVerse(v, animate) {
+    const card = document.getElementById('verse-card');
+    const textEl = document.getElementById('verse-text');
+    const attrEl = document.getElementById('verse-attr');
+    if (animate) {
+      card.classList.add('fading');
+      setTimeout(() => {
+        textEl.innerHTML = v.lines.join('<br>');
+        attrEl.textContent = v.attr;
+        card.classList.remove('fading');
+      }, 270);
+    } else {
+      textEl.innerHTML = v.lines.join('<br>');
+      attrEl.textContent = v.attr;
+    }
+  }
+
+  renderVerse(pickVerse(), false);
+
+  document.getElementById('verse-card').addEventListener('click', () => {
+    renderVerse(pickVerse(), true);
+  });
+
+  /* ── Countdown to next National Day ── */
+  function nextNationalDay() {
+    const now = new Date();
+    let year = now.getFullYear();
+    let target = new Date(year, 9, 1, 0, 0, 0); // month 9 = October
+    if (now >= target) target = new Date(year + 1, 9, 1, 0, 0, 0);
+    return target;
+  }
+
+  function tickCountdown() {
+    const now = new Date();
+    const diff = Math.max(0, nextNationalDay() - now);
+    const days  = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins  = Math.floor((diff % 3600000) / 60000);
+    const secs  = Math.floor((diff % 60000) / 1000);
+    document.getElementById('cd-days').textContent  = String(days).padStart(2,'0');
+    document.getElementById('cd-hours').textContent = pad(hours);
+    document.getElementById('cd-mins').textContent  = pad(mins);
+    document.getElementById('cd-secs').textContent  = pad(secs);
+  }
+  tickCountdown();
+  setInterval(tickCountdown, 1000);
+
+  /* ── Year progress ── */
+  function tickYearProgress() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 0, 1);
+    const end = new Date(now.getFullYear() + 1, 0, 1);
+    const pct = ((now - start) / (end - start)) * 100;
+    document.getElementById('year-progress-fill').style.width = pct + '%';
+    document.getElementById('year-progress-val').textContent = pct.toFixed(1) + '%';
+  }
+  tickYearProgress();
+  setInterval(tickYearProgress, 60000);
+
+  /* ── Wish chips ── */
+  const WISHES = [
+    '愿山河无恙，国泰民安',
+    '祝祖国繁荣昌盛，国运昌隆',
+    '愿你我与盛世同行',
+    '家国梦圆，岁月皆安',
+    '愿前程似锦，家国同庆',
+    '盛世中华，国富民强',
+    '愿岁岁年年，国泰民安',
+    '祝福祖国，繁荣永昌',
+  ];
+
+  const wishesTrack = document.getElementById('wishes-track');
+  WISHES.forEach(text => {
+    const chip = document.createElement('div');
+    chip.className = 'wish-chip';
+    chip.textContent = text;
+    chip.addEventListener('click', async () => {
+      document.querySelectorAll('.wish-chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      try {
+        await navigator.clipboard.writeText(text);
+        const hint = document.getElementById('wish-picked-hint');
+        const old = hint.textContent;
+        hint.textContent = '已复制 ✓';
+        setTimeout(() => { hint.textContent = old; }, 1500);
+      } catch (e) { /* clipboard unavailable, ignore */ }
+    });
+    wishesTrack.appendChild(chip);
+  });
+
+  /* ── Share button ── */
+  document.getElementById('share-btn').addEventListener('click', async () => {
+    const btn = document.getElementById('share-btn');
+    const text = '国庆快乐！愿山河无恙，岁月静好，与你共享这盛世芳华 🎉';
+    const shareData = { title: '国庆节快乐', text, url: location.href };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(`${text}\n${location.href}`);
+        btn.textContent = '✓ 已复制祝福语和链接';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '✦ 分享这份祝福 ✦'; btn.classList.remove('copied'); }, 2000);
+      }
+    } catch (e) { /* user cancelled share, ignore */ }
+  });
+
+  /* ── Ambient tone toggle (WebAudio, no external file) ── */
+  let audioCtx = null, droneNodes = [], playing = false;
+
+  function startAmbient() {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const freqs = [196, 294, 392]; // simple warm triad
+    droneNodes = freqs.map((f, i) => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      gain.gain.value = 0;
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      gain.gain.linearRampToValueAtTime(0.035 / (i + 1), audioCtx.currentTime + 1.2);
+      return { osc, gain };
+    });
+  }
+
+  function stopAmbient() {
+    if (!audioCtx) return;
+    droneNodes.forEach(({ osc, gain }) => {
+      gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.6);
+      osc.stop(audioCtx.currentTime + 0.65);
+    });
+    setTimeout(() => { audioCtx && audioCtx.close(); audioCtx = null; }, 700);
+    droneNodes = [];
+  }
+
+  document.getElementById('music-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    const btn = document.getElementById('music-btn');
+    playing = !playing;
+    if (playing) {
+      startAmbient();
+      btn.textContent = '🔊';
+      btn.classList.add('playing');
+    } else {
+      stopAmbient();
+      btn.textContent = '🔇';
+      btn.classList.remove('playing');
+    }
+  });
+})();
+</script>
+</body>
+</html>
